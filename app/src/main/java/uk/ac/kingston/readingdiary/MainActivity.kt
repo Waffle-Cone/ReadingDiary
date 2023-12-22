@@ -68,7 +68,7 @@ private fun MyApp(modifier: Modifier = Modifier) {
             color = MaterialTheme.colorScheme.background
     ){
         if (shouldShowAddScreen){
-            AddEntryScreen(entries,HIDEADDSCREEN)
+            AddEntryScreen(entries = entries,HIDEADDSCREEN)
         }
         else{
             MainScreen(entries,SHOWADDSCREEN)

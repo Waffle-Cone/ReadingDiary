@@ -1,6 +1,7 @@
 package uk.ac.kingston.readingdiary
 
 import android.util.Log
+import android.widget.DatePicker
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,7 @@ import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -35,6 +37,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import uk.ac.kingston.readingdiary.Entry
+import java.time.LocalDate
+import java.time.LocalDateTime
+
 class Database{
     private val entryList = mutableListOf<Entry>()
     fun addEntry (entry: Entry): Boolean {
@@ -100,6 +105,7 @@ fun AddEntryScreen(
 {
     var shouldSubmit by remember { mutableStateOf(false) }
     var title by remember { mutableStateOf("")}
+    var dateTime by remember { mutableStateOf(LocalDateTime.now())};
 
     if(shouldSubmit)
     {
@@ -114,7 +120,7 @@ fun AddEntryScreen(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         //
-        TitleBar("hello",GOTOMAINSCREEN)
+        TitleBar("Add Book Entry",GOTOMAINSCREEN)
         //edit fields
         TextField(
             value = title,
@@ -125,6 +131,8 @@ fun AddEntryScreen(
                 imeAction = ImeAction.Done
             )
         )
+        DateTimePicker(dateTime)
+
 
         // Button tray
         Spacer(modifier = Modifier.weight(1f))
