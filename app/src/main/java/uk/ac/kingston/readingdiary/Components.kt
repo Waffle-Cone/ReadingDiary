@@ -35,6 +35,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoField
 import java.util.Calendar
+import kotlin.time.Duration.Companion.days
 
 
 @Composable
@@ -69,8 +70,26 @@ fun DateTimePicker(dateTime:LocalDateTime){
         state = datePickerState
     )
 
-    var selectedDate : LocalDateTime
+    var selectedDate = datePickerState.selectedDateMillis
+    val calander = Calendar.getInstance();
+    if (selectedDate != null) {
+        calander.calendarType
+        calander.timeInMillis = selectedDate
+      //  calander.add(Calendar.DAY_OF_MONTH,1)
 
-    Text(text = "$selectedDate")
+        var year = calander.get(Calendar.YEAR)
+        var month = calander.get(Calendar.MONTH)
+        var day = calander.get(Calendar.DAY_OF_MONTH)
+        var hour = calander.get(Calendar.HOUR)
+        var minute = calander.get(Calendar.MINUTE)
+
+        var newDateTime = LocalDateTime.of(year,month,day,hour,minute)
+        Text(text = "${newDateTime.toString()}")
+    }
+    
+
+
+
+
 
 }
