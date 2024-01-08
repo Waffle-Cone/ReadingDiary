@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-data class Entry(val id: Int, var title: String, var pageFrom: Double = 0.0, var pageTo: Double = 0.0, var rating: Int = 0, var dateTime: LocalDateTime =LocalDateTime.now()){
+data class Entry(val id: Int, var title: String, var pageFrom: Double = 0.0, var pageTo: Double = 0.0, var rating: Int = 0, var comment: String = "", var dateTime: LocalDateTime =LocalDateTime.now()){
     private val myDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(" dd MMM yyyy HH:mm")
     fun getDateTime(): String
     {

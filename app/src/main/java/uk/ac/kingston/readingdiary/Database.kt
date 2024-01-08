@@ -1,34 +1,51 @@
 package uk.ac.kingston.readingdiary
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.absolutePadding
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.rounded.AddCircle
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Done
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DismissDirection
+import androidx.compose.material3.DismissValue
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
@@ -70,7 +87,7 @@ class Database{
         val existingEntry = getEntryById(id)
         if (existingEntry != null) {
             entryList.remove(existingEntry)
-            Log.i("tag1","Entry deleted successfully")
+            Log.i("tag1","Item deleted = ${id}")
             return true
         }
         else{
@@ -83,12 +100,85 @@ class Database{
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EntryList(entries: Database,modifier: Modifier = Modifier){
-    LazyColumn (modifier.padding(vertical = 5.dp)){
+fun EntryList(
+    entries: Database,
+    modifier: Modifier = Modifier,
+    ONITEMDELETE: () -> Unit,
+    ONITEMKEEP: () -> Unit,
+){
+    var showConfirm by rememberSaveable{ mutableStateOf(false) }
+    var selectedEntry by remember{mutableStateOf<Entry?>(null)}
+
+
+    if(showConfirm)
+    {
+        AlertDialog(
+            onDismissRequest = {showConfirm = false},
+            title = { Text(text = "hello")},
+            text = { Text(text = "dgdag")},
+            confirmButton ={
+                TextButton(
+                    onClick = { ONITEMDELETE()},
+                ) {
+                    Text(text = "Confirm")
+                }
+            },
+            dismissButton = {
+
+            }
+        )
+    }
+
+    LazyColumn (
+        modifier.padding(vertical = 5.dp),
+        state = rememberLazyListState()
+    )
+    {
         items(items = entries.getAllEntries())
-        {
-            entry -> EntryCard(entry = entry)
+        { entry ->
+            val state = rememberDismissState(
+                confirmValueChange = {
+                    if(it == DismissValue.DismissedToStart) // left to right
+                    {
+                        //entries.deleteEntry(entry.id)
+                        selectedEntry = entry
+                        showConfirm = true
+                    }
+                    true
+                }
+            )
+            SwipeToDismiss(
+                directions= listOf<DismissDirection>(DismissDirection.EndToStart).toSet(),
+                state = state,
+                background = {
+                        var color: Color = Color.Transparent
+
+                         if(state.dismissDirection == DismissDirection.EndToStart)
+                         {
+                            color = Color.Red
+                         }
+                        else if(state.dismissDirection == DismissDirection.StartToEnd)
+                        {
+                            color = Color.Green
+                        }
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(color),
+                        ){
+                        Icon(
+                            imageVector = Icons.Rounded.Delete,
+                            contentDescription = "Delete",
+                            modifier = Modifier.align(Alignment.CenterEnd)
+                            )
+                    }
+                } ,
+                dismissContent = {
+                    EntryCard(entry = entry)
+            })
         }
     }
 }
@@ -101,12 +191,12 @@ fun AddEntryScreen(
 {
     var shouldSubmit by remember { mutableStateOf(false) }
     val id = entries.getAllEntries().size+1
-    var title by remember { mutableStateOf("")}
-    var comments by remember { mutableStateOf("")}
-    var readFrom by remember { mutableStateOf("0") }
-    var readTo by remember { mutableStateOf("0") }
-    var rating by remember { mutableStateOf(0) }
-    var dateTime by remember { mutableStateOf(LocalDateTime.now()) };
+    var title by rememberSaveable { mutableStateOf("")}
+    var comments by rememberSaveable { mutableStateOf("")}
+    var readFrom by rememberSaveable { mutableStateOf("0") }
+    var readTo by rememberSaveable { mutableStateOf("0") }
+    var rating by rememberSaveable { mutableStateOf(0) }
+    var dateTime by rememberSaveable { mutableStateOf(LocalDateTime.now()) };
     var newEntry by remember { mutableStateOf<Entry>(Entry(id,title)) }
 
     Column(
@@ -226,7 +316,9 @@ fun AddEntryScreen(
                 keyboardType = KeyboardType.Text,
                 imeAction = ImeAction.Done
             ),
-            modifier = Modifier.fillMaxWidth())
+            modifier = Modifier
+                .fillMaxWidth())
+
 
         //Button tray / submit functionality
         if(title.isNotEmpty() && noPageError)
@@ -259,6 +351,7 @@ fun AddEntryScreen(
             newEntry.pageFrom = readFrom.toDouble()
             newEntry.pageTo = readTo.toDouble()
             newEntry.rating = rating
+            newEntry.comment = comments
             entries.addEntry(newEntry)
             GOTOMAINSCREEN();
         }

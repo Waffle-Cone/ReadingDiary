@@ -1,7 +1,6 @@
 package uk.ac.kingston.readingdiary
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -14,8 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.rounded.AddCircle
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -31,13 +28,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.modifier.modifierLocalConsumer
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import uk.ac.kingston.readingdiary.ui.theme.ReadingDiaryTheme
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -86,13 +78,18 @@ private fun MyApp(modifier: Modifier = Modifier) {
 @Composable
 fun MainScreen(
     entries: Database,
-    GOTOADDSCREEN: () -> Unit
+    GOTOADDSCREEN: () -> Unit,
 ){
+    var HASITEMBEENDELETED by rememberSaveable{ mutableStateOf(false) }
+    val ITEMDELETED = {HASITEMBEENDELETED = true}
+    val ITEMKEPT = {HASITEMBEENDELETED = false}
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
-    ) {
+    )
+    {
         Row (
             modifier = Modifier
                 .fillMaxWidth()
@@ -112,22 +109,33 @@ fun MainScreen(
             color = MaterialTheme.colorScheme.inverseSurface
         )
         Spacer(modifier = Modifier.absolutePadding(0.dp,10.dp))
+
         if(entries.getAllEntries().isEmpty())
         {
-            IconButton(
-                onClick = GOTOADDSCREEN,
-                modifier = Modifier.size(32.dp),
-                
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.AddCircle, 
-                    contentDescription = null,
-                    modifier = Modifier.size(80.dp))
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ){
+                IconButton(
+                    onClick = GOTOADDSCREEN,
+                    modifier = Modifier.size(50.dp),
+
+                    ) {
+                    Icon(
+                        imageVector = Icons.Rounded.AddCircle,
+                        contentDescription = null,
+                        modifier = Modifier.size(80.dp))
+                }
+                Text(text = "Add First Entry")
             }
-            Text(text = "Add Entry")
         }else {
             Row {
-                EntryList(entries = entries)
+                EntryList(
+                    entries = entries,
+                    ONITEMDELETE = ITEMDELETED,
+                    ONITEMKEEP = ITEMKEPT
+                    )
             }
         }
     }
