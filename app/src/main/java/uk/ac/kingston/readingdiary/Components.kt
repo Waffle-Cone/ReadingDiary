@@ -1,9 +1,16 @@
 package uk.ac.kingston.readingdiary
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.FavoriteBorder
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.DisplayMode
@@ -16,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -30,7 +38,7 @@ fun TitleBar(title: String= "Enter Title", HANDLEBACK: ()->Unit){
             onClick = HANDLEBACK,
             modifier = Modifier.size(50.dp)
         ){
-            Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
+            Icon(imageVector = Icons.Rounded.ArrowBack, contentDescription = null)
         }
         Text(text = title,
             style = MaterialTheme.typography.titleLarge)
@@ -40,7 +48,8 @@ fun TitleBar(title: String= "Enter Title", HANDLEBACK: ()->Unit){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DateTimePicker(dateTime: LocalDateTime, entry: Entry){
+fun DateTimePicker(dateTime: LocalDateTime, entry: Entry)
+{
 
     val datePickerState = remember {
         DatePickerState(
@@ -60,7 +69,7 @@ fun DateTimePicker(dateTime: LocalDateTime, entry: Entry){
     if (selectedDate != null) {
         myCalendar.calendarType
         myCalendar.timeInMillis = selectedDate
-        //handle month
+
         //the date picker starts with jan = 0 not 1 so everything is behind bt one
         myCalendar.add(Calendar.MONTH,1)
         var month = myCalendar.get(Calendar.MONTH)
@@ -73,8 +82,6 @@ fun DateTimePicker(dateTime: LocalDateTime, entry: Entry){
 
         var year = myCalendar.get(Calendar.YEAR)
         var day = myCalendar.get(Calendar.DAY_OF_MONTH)
-        //var hour = myCalendar.get(Calendar.HOUR)
-       // var minute = myCalendar.get(Calendar.MINUTE)
         var nowTime = LocalTime.now()
 
         try{
@@ -87,12 +94,45 @@ fun DateTimePicker(dateTime: LocalDateTime, entry: Entry){
             )
         }
     }
-
-    
-    
-
-
-
-
-
 }
+
+@Composable
+fun StarRating(
+    isClickable: Boolean = true,
+    modifier: Modifier = Modifier,
+    rating: Int = 0,
+    stars: Int = 5,
+    starsColor: Color = Color.Red,
+    onRatingChange: (Int) -> Unit
+){
+    Row{
+        for(i in 1.. stars)
+        {
+            if(isClickable)
+            {
+                Icon(
+                    modifier = modifier.clickable { onRatingChange(i.toInt()) },
+                    contentDescription = "star rating",
+                    tint = starsColor,
+                    imageVector = if (i <= rating) {
+                        Icons.Rounded.Favorite
+                    } else {
+                        Icons.Rounded.FavoriteBorder
+                    }
+                )
+            }else{
+                Icon(
+                    contentDescription = "star rating",
+                    tint = starsColor,
+                    imageVector = if (i <= rating) {
+                        Icons.Rounded.Favorite
+                    } else {
+                        Icons.Outlined.FavoriteBorder
+                    }
+                )
+            }
+
+        }
+    }
+}
+

@@ -7,6 +7,8 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.absolutePadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -14,6 +16,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.rounded.AddCircle
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -25,7 +29,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import uk.ac.kingston.readingdiary.ui.theme.ReadingDiaryTheme
@@ -96,11 +103,32 @@ fun MainScreen(
                 onClick = GOTOADDSCREEN,
                 modifier = Modifier.size(32.dp)
             ) {
-                Icon(imageVector = Icons.Default.AddCircle, contentDescription = null)
+                Icon(imageVector = Icons.Rounded.AddCircle, contentDescription = null)
             }
         }
-        Row {
-            EntryList(entries = entries)
+
+        Divider(
+            thickness = 3.dp,
+            color = MaterialTheme.colorScheme.inverseSurface
+        )
+        Spacer(modifier = Modifier.absolutePadding(0.dp,10.dp))
+        if(entries.getAllEntries().isEmpty())
+        {
+            IconButton(
+                onClick = GOTOADDSCREEN,
+                modifier = Modifier.size(32.dp),
+                
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.AddCircle, 
+                    contentDescription = null,
+                    modifier = Modifier.size(80.dp))
+            }
+            Text(text = "Add Entry")
+        }else {
+            Row {
+                EntryList(entries = entries)
+            }
         }
     }
 }

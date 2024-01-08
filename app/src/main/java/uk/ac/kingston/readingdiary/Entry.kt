@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.absolutePadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -25,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-data class Entry(val id: Int, var title: String, var dateTime: LocalDateTime =LocalDateTime.now()){
+data class Entry(val id: Int, var title: String, var pageFrom: Double = 0.0, var pageTo: Double = 0.0, var rating: Int = 0, var dateTime: LocalDateTime =LocalDateTime.now()){
     private val myDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(" dd MMM yyyy HH:mm")
     fun getDateTime(): String
     {
@@ -44,8 +45,19 @@ fun EntryCard(entry: Entry) {
             Column(modifier = Modifier
                 .weight(1f))
             {
-                Text(text = entry.title)
-                Text(text = entry.getDateTime())
+                Text(text = "Title: ${entry.title}")
+                Text(text = "Date: ${entry.getDateTime()}")
+                Row {
+                    Text(text = "Pg.${entry.pageFrom} - Pg.${entry.pageTo}")
+                }
+                StarRating(
+                    modifier = Modifier.size(20.dp)
+                        .absolutePadding(0.dp,10.dp),
+                    rating = entry.rating,
+                    isClickable = false
+                ){
+                    entry.rating = it;
+                }
             }
             ElevatedButton(onClick = {})
             {
