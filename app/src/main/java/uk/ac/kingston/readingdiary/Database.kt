@@ -103,6 +103,7 @@ class Database{
 fun EntryListView(
     entries: Database,
     GOTOEDITSCREEN: ()-> Unit,
+    onEntrySelect: (Entry) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showConfirm by rememberSaveable { mutableStateOf(false) }
@@ -147,6 +148,7 @@ fun EntryListView(
                     }
                     if (it == DismissValue.DismissedToEnd) // from left to right EdIT
                     {
+                        onEntrySelect(entry)
                         GOTOEDITSCREEN()
                     }
                     true
@@ -399,7 +401,7 @@ fun AddEntryScreen(
 
 @Composable
 fun EditScreen(
-    selectedEntry: Entry?,
+    selectedEntry: Entry,
     entries: Database,
     GOTOMAINSCREEN: () -> Unit)
 {
@@ -413,9 +415,7 @@ fun EditScreen(
     var dateTime by rememberSaveable { mutableStateOf(LocalDateTime.now()) };
     var newEntry by remember { mutableStateOf<Entry>(Entry(id,title)) }
 
-    if (selectedEntry != null) {
-        Text(text = selectedEntry.title)
-    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -429,6 +429,7 @@ fun EditScreen(
             color = MaterialTheme.colorScheme.inverseSurface
         )
         Spacer(modifier = Modifier.absolutePadding(0.dp,10.dp))
+        Text(text = selectedEntry.title)
         //edit fields
         TextField(
             value = title,

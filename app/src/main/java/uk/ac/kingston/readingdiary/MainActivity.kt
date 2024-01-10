@@ -47,13 +47,14 @@ class MainActivity : ComponentActivity() {
 private fun MyApp(modifier: Modifier = Modifier) {
     val entries  by remember {mutableStateOf(Database())}
     var selectedEntry by remember { mutableStateOf<Entry?>(null) }
+
     var shouldShowAddScreen by rememberSaveable { mutableStateOf(false) }
     val SHOWADDSCREEN = {shouldShowAddScreen = true}
     val HIDEADDSCREEN = {shouldShowAddScreen = false}
 
     var shouldShowEditScreen by rememberSaveable { mutableStateOf(false) }
-    val SHOWEDITSCREEN = {shouldShowAddScreen = true}
-    val HIDEEDITSCREEN = {shouldShowAddScreen = false}
+    val SHOWEDITSCREEN = {shouldShowEditScreen = true}
+    val HIDEEDITSCREEN = {shouldShowEditScreen = false}
 
     Surface(modifier,
             color = MaterialTheme.colorScheme.background
@@ -63,10 +64,14 @@ private fun MyApp(modifier: Modifier = Modifier) {
         }
         else if(shouldShowEditScreen)
         {
-            EditScreen(selectedEntry,entries,HIDEEDITSCREEN)
+            selectedEntry?.let { EditScreen(it,entries,HIDEEDITSCREEN) }
         }
         else{
-            MainScreen(selectedEntry,entries,SHOWADDSCREEN,SHOWEDITSCREEN)
+            MainScreen(
+                entrySelected ={
+                    selectedEntry = it
+                },
+                entries,SHOWADDSCREEN,SHOWEDITSCREEN)
         }
 
     }
@@ -74,7 +79,7 @@ private fun MyApp(modifier: Modifier = Modifier) {
 
 @Composable
 fun MainScreen(
-    selectedEntry: Entry?,
+    entrySelected: (Entry) -> Unit,
     entries: Database,
     GOTOADDSCREEN: () -> Unit,
     GOTOEDITSCREEN: () -> Unit
@@ -126,7 +131,10 @@ fun MainScreen(
             }
         }else {
             Row {
-                EntryListView(entries,GOTOEDITSCREEN)
+                EntryListView(entries,GOTOEDITSCREEN,
+                    onEntrySelect ={
+                        entrySelected(it)
+                    })
             }
         }
     }
