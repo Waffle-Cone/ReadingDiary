@@ -36,19 +36,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             ReadingDiaryTheme {
-                // A surface container using the 'background' color from the theme
-
-                    /*val y = DateTimeFormatter.ofPattern(" dd MMM yyyy HH:mm")
-                    val x = LocalDateTime.now().format(y)
-                    //Text(text = x.toString())
-
-                    val repo = Database();
-                    val entry1 = Entry(1,"Book1");
-                    val entry2 = Entry(2,"Book2");
-                    repo.addEntry(entry1);
-                    repo.addEntry(entry2);
-                    //Text(text = repo.getEntryById(1)?.getDateTime() ?: "Entry/Date not found")
-                    EntryList(repo)*/
                     MyApp( modifier = Modifier.fillMaxSize())
                 }
             }
@@ -58,32 +45,40 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun MyApp(modifier: Modifier = Modifier) {
-    val entries by remember { mutableStateOf(Database()) }
+    val entries  by remember {mutableStateOf(Database())}
+    var selectedEntry by remember { mutableStateOf<Entry?>(null) }
     var shouldShowAddScreen by rememberSaveable { mutableStateOf(false) }
     val SHOWADDSCREEN = {shouldShowAddScreen = true}
     val HIDEADDSCREEN = {shouldShowAddScreen = false}
+
+    var shouldShowEditScreen by rememberSaveable { mutableStateOf(false) }
+    val SHOWEDITSCREEN = {shouldShowAddScreen = true}
+    val HIDEEDITSCREEN = {shouldShowAddScreen = false}
 
     Surface(modifier,
             color = MaterialTheme.colorScheme.background
     ){
         if (shouldShowAddScreen){
-            AddEntryScreen(entries = entries,HIDEADDSCREEN)
+            AddEntryScreen(entries,HIDEADDSCREEN)
+        }
+        else if(shouldShowEditScreen)
+        {
+            EditScreen(selectedEntry,entries,HIDEEDITSCREEN)
         }
         else{
-            MainScreen(entries,SHOWADDSCREEN)
+            MainScreen(selectedEntry,entries,SHOWADDSCREEN,SHOWEDITSCREEN)
         }
+
     }
 }
 
 @Composable
 fun MainScreen(
+    selectedEntry: Entry?,
     entries: Database,
     GOTOADDSCREEN: () -> Unit,
+    GOTOEDITSCREEN: () -> Unit
 ){
-    var HASITEMBEENDELETED by rememberSaveable{ mutableStateOf(false) }
-    val ITEMDELETED = {HASITEMBEENDELETED = true}
-    val ITEMKEPT = {HASITEMBEENDELETED = false}
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -131,11 +126,7 @@ fun MainScreen(
             }
         }else {
             Row {
-                EntryList(
-                    entries = entries,
-                    ONITEMDELETE = ITEMDELETED,
-                    ONITEMKEEP = ITEMKEPT
-                    )
+                EntryListView(entries,GOTOEDITSCREEN)
             }
         }
     }

@@ -52,7 +52,6 @@ fun TitleBar(title: String= "Enter Title", HANDLEBACK: ()->Unit){
 @Composable
 fun DateTimePicker(dateTime: LocalDateTime, entry: Entry)
 {
-
     val datePickerState = remember {
         DatePickerState(
             yearRange = (2022..2024),
@@ -72,7 +71,7 @@ fun DateTimePicker(dateTime: LocalDateTime, entry: Entry)
         myCalendar.calendarType
         myCalendar.timeInMillis = selectedDate
 
-        //the date picker starts with jan = 0 not 1 so everything is behind bt one
+        //the date picker starts with jan = 0 not 1 so everything is behind
         myCalendar.add(Calendar.MONTH,1)
         var month = myCalendar.get(Calendar.MONTH)
 
@@ -86,6 +85,7 @@ fun DateTimePicker(dateTime: LocalDateTime, entry: Entry)
         var day = myCalendar.get(Calendar.DAY_OF_MONTH)
         var nowTime = LocalTime.now()
 
+        // in try catch in case the date is incorrect
         try{
             var newDateTime = LocalDateTime.of(year,month,day,nowTime.hour,nowTime.minute)
             entry.dateTime= LocalDateTime.of(newDateTime.toLocalDate(),nowTime)
@@ -98,6 +98,7 @@ fun DateTimePicker(dateTime: LocalDateTime, entry: Entry)
     }
 }
 
+// getting the hearts to work
 @Composable
 fun StarRating(
     isClickable: Boolean = true,
@@ -110,16 +111,18 @@ fun StarRating(
     Row{
         for(i in 1.. stars)
         {
+            //i don't want all start to be clickable( the one on display)
             if(isClickable)
             {
                 Icon(
-                    modifier = modifier.clickable { onRatingChange(i.toInt()) },
+                    modifier = modifier.clickable { onRatingChange(i.toInt()) }, //get the index number and set that to the rating
                     contentDescription = "star rating",
                     tint = starsColor,
+                    // print me the filled heart if the index we are on is less than or equal to rating
                     imageVector = if (i <= rating) {
                         Icons.Rounded.Favorite
                     } else {
-                        Icons.Rounded.FavoriteBorder
+                        Icons.Rounded.FavoriteBorder // the rest are outlines
                     }
                 )
             }else{
@@ -136,20 +139,6 @@ fun StarRating(
 
         }
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MyAlertDialog(
-    ShowHide: () -> Unit,
-){
-    AlertDialog(
-        onDismissRequest = {ShowHide},
-        title = { Text(text = "hello")},
-        text = { Text(text = "dgdag")},
-        confirmButton =
-    )
-
 }
 
 

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.absolutePadding
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -38,7 +39,8 @@ data class Entry(val id: Int, var title: String, var pageFrom: Double = 0.0, var
 @Composable
 fun EntryCard(entry: Entry) {
     Surface(color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp))
+        modifier = Modifier.padding(4.dp)
+            .fillMaxSize())
     {
         Row(modifier = Modifier.padding(24.dp))
         {
