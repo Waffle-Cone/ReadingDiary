@@ -42,6 +42,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -50,9 +51,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import java.time.LocalDateTime
+import java.util.AbstractMap.SimpleImmutableEntry
 
 class Database{
-    private val entryList =mutableStateListOf<Entry>()// make sure this is a StateList so that things reload properly
+    private var entryList= mutableStateListOf<Entry>()// make sure this is a StateList so that things reload properly
+    private var selectedEntry: Entry? =null
     fun addEntry (entry: Entry): Boolean {
         if(getEntryById(entry.id) != null){
             Log.i("tag1","Entry with the ID: ${entry.id} already exists")
@@ -81,11 +84,18 @@ class Database{
             return false
         }
     }
-    fun deleteEntry(id: Int): Boolean{
+    fun deleteEntry(id: Int, onDelete: ()->Unit): Boolean{
         val existingEntry = getEntryById(id)
         if (existingEntry != null) {
             entryList.remove(existingEntry)
             Log.i("tag1","Item deleted = ${id}")
+            onDelete()
+            Log.i("tag1","${entryList.size}")
+
+            if(entryList.isNotEmpty())
+            {
+                resetList()
+            }
             return true
         }
         else{
@@ -95,6 +105,34 @@ class Database{
     }
     fun getAllEntries(): List<Entry> {
         return entryList.toList()
+    }
+
+    /**
+     *   Basically I have to re shuffle the entire entryList so that the selection IDs work.
+     *   THIS fixes the error of when i have three items and delete the center one. I wouldnt be able to properly delete the others
+     *   without refreshing the page
+     */
+
+    fun resetList(newList: MutableList<Entry> = mutableListOf()){
+        for (entry in entryList)
+        {
+            newList.add(entry)
+
+        }
+        for(i in 0 until newList.size){
+            Log.i("tag1"," ${i} ENTRYLIST ${entryList.toString()}")
+            entryList.remove(newList.get(i))
+
+            Log.i("tag1"," BEFORE new entry in newList ${newList.get(i).toString()}")
+            newList.get(i).resetID(i)
+            Log.i("tag1"," AFTER new entry in newList ${newList.get(i).toString()}")
+            Log.i("tag1","  ENTRYLIST SIZE ${entryList.size}")
+
+            entryList.add(newList.get(i))
+            Log.i("tag1","  AFTER ENTRYLIST SIZE ${entryList.size}")
+            Log.i("tag1"," REAWAKEND ENTRYLIST ${entryList.get(i)}")
+            // entryList.add(newList.get(i))
+        }
     }
 }
 
@@ -107,17 +145,20 @@ fun EntryListView(
     modifier: Modifier = Modifier
 ) {
     var showConfirm by rememberSaveable { mutableStateOf(false) }
+    val hideConfirm = {showConfirm = false}
     var selectedEntry by remember { mutableStateOf<Entry?>(null) }
 
     // delete confirmation modal
     if (showConfirm) {
         AlertDialog(
-            onDismissRequest = { showConfirm = false},
+            onDismissRequest = { showConfirm = false },
             title = { Text(text = "Delete Confirmation") },
             text = { Text(text = "Delete Book: ${selectedEntry?.title}?") },
             confirmButton = {
                 TextButton(
-                    onClick = { selectedEntry?.id?.let { entries.deleteEntry(it) } },
+                    onClick = {
+                        selectedEntry?.id?.let { entries.deleteEntry(it, hideConfirm) }
+                        },
                 ) {
                     Text(text = "Confirm")
                 }
@@ -138,12 +179,16 @@ fun EntryListView(
     )
     {
         items(items = entries.getAllEntries())
-        { entry ->
+        { entry -> // this is wrong after deleting a few entries
             val dismissState = rememberDismissState(
                 confirmValueChange = {
                     if (it == DismissValue.DismissedToStart) // from right to left DELETE
                     {
-                        selectedEntry = entry
+
+                        selectedEntry = entries.getEntryById(entry.id) // directly setting the selectedEntry to the entry from the lazyList gives me the wrong one!!!!! BUT the ID is correct :)
+                        Log.i("tag1","Selected title: ${entries.getEntryById(entry.id)?.title}")
+                        Log.i("tag1","Selected id: ${entry.id}")
+                        Log.i("tag1","  INSIDE SLIDE ${entries.getAllEntries().toString()}")
                         showConfirm = true
                     }
                     if (it == DismissValue.DismissedToEnd) // from left to right EdIT
@@ -231,7 +276,7 @@ fun AddEntryScreen(
     GOTOMAINSCREEN: () -> Unit)
 {
     var shouldSubmit by remember { mutableStateOf(false) }
-    val id = entries.getAllEntries().size+1
+    val id = entries.getAllEntries().size
     var title by rememberSaveable { mutableStateOf("")}
     var comments by rememberSaveable { mutableStateOf("")}
     var readFrom by rememberSaveable { mutableStateOf("0") }
@@ -401,20 +446,20 @@ fun AddEntryScreen(
 
 @Composable
 fun EditScreen(
-    selectedEntry: Entry,
+    selectedID: Entry,
     entries: Database,
     GOTOMAINSCREEN: () -> Unit)
 {
     var shouldSubmit by remember { mutableStateOf(false) }
+    var selectedEntry by remember { mutableStateOf(entries.getEntryById(selectedID.id)) }
     val id = entries.getAllEntries().size+1
-    var title by rememberSaveable { mutableStateOf("")}
-    var comments by rememberSaveable { mutableStateOf("")}
-    var readFrom by rememberSaveable { mutableStateOf("0") }
-    var readTo by rememberSaveable { mutableStateOf("0") }
-    var rating by rememberSaveable { mutableStateOf(0) }
-    var dateTime by rememberSaveable { mutableStateOf(LocalDateTime.now()) };
+    var title by rememberSaveable { mutableStateOf( selectedEntry!!.title)}
+    var comments by rememberSaveable { mutableStateOf(selectedEntry!!.comment)}
+    var readFrom by rememberSaveable { mutableStateOf(selectedEntry!!.pageFrom.toString()) }
+    var readTo by rememberSaveable { mutableStateOf(selectedEntry!!.pageTo.toString()) }
+    var rating by rememberSaveable { mutableStateOf(selectedEntry!!.rating) }
+    var dateTime by rememberSaveable { mutableStateOf(selectedEntry!!.dateTime) };
     var newEntry by remember { mutableStateOf<Entry>(Entry(id,title)) }
-
 
     Column(
         modifier = Modifier
@@ -429,7 +474,6 @@ fun EditScreen(
             color = MaterialTheme.colorScheme.inverseSurface
         )
         Spacer(modifier = Modifier.absolutePadding(0.dp,10.dp))
-        Text(text = selectedEntry.title)
         //edit fields
         TextField(
             value = title,
@@ -440,7 +484,7 @@ fun EditScreen(
                 imeAction = ImeAction.Done
             )
         )
-        DateTimePicker(dateTime,newEntry)
+        selectedEntry?.let { DateTimePicker(dateTime, it) }
 
         var noPageError: Boolean= true;
         Column {

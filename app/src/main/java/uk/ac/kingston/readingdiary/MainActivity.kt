@@ -21,13 +21,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import uk.ac.kingston.readingdiary.ui.theme.ReadingDiaryTheme
 
@@ -64,7 +67,8 @@ private fun MyApp(modifier: Modifier = Modifier) {
         }
         else if(shouldShowEditScreen)
         {
-            selectedEntry?.let { EditScreen(it,entries,HIDEEDITSCREEN) }
+           selectedEntry?.let { EditScreen(it,entries,HIDEEDITSCREEN) }
+            //Database().getSelectedEntry()?.let { EditScreen(it,entries,HIDEEDITSCREEN) }
         }
         else{
             MainScreen(
@@ -84,10 +88,20 @@ fun MainScreen(
     GOTOADDSCREEN: () -> Unit,
     GOTOEDITSCREEN: () -> Unit
 ){
+    var ONDELETE by remember { mutableStateOf(false) }
+    val pleaseReset = {ONDELETE = true}
+    val resetOnDelete = {ONDELETE = false}
+    
+
+    if(ONDELETE)
+    {
+        Text(text = "hgvhv")
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(24.dp)
     )
     {
         Row (
@@ -110,6 +124,8 @@ fun MainScreen(
         )
         Spacer(modifier = Modifier.absolutePadding(0.dp,10.dp))
 
+        
+        
         if(entries.getAllEntries().isEmpty())
         {
             Column(
