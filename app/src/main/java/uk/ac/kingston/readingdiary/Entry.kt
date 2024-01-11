@@ -41,7 +41,9 @@ data class Entry(var id: Int, var title: String, var pageFrom: Double = 0.0, var
 
 
 @Composable
-fun EntryCard(entry: Entry) {
+fun EntryCard(
+    entry: Entry
+              ) {
     Surface(color = MaterialTheme.colorScheme.primary,
         modifier = Modifier.padding(4.dp)
             .fillMaxSize())
@@ -67,7 +69,7 @@ fun EntryCard(entry: Entry) {
             }
             ElevatedButton(onClick = {})
             {
-                Text( "Edit")
+                Text( "View")
             }
         }
     }
