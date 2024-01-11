@@ -59,6 +59,9 @@ private fun MyApp(modifier: Modifier = Modifier) {
     val SHOWEDITSCREEN = {shouldShowEditScreen = true}
     val HIDEEDITSCREEN = {shouldShowEditScreen = false}
 
+    var shouldShowViewScreen by rememberSaveable { mutableStateOf(false) }
+    val SHOWVIEWSCREEN = {shouldShowViewScreen = true}
+    val HIDEVIEWSCREEN = {shouldShowViewScreen = false}
     Surface(modifier,
             color = MaterialTheme.colorScheme.background
     ){
@@ -68,14 +71,17 @@ private fun MyApp(modifier: Modifier = Modifier) {
         else if(shouldShowEditScreen)
         {
            selectedEntry?.let { EditScreen(it,entries,HIDEEDITSCREEN) }
-            //Database().getSelectedEntry()?.let { EditScreen(it,entries,HIDEEDITSCREEN) }
+        }
+        else if(shouldShowViewScreen)
+        {
+            selectedEntry?.let { ViewEntry(it,entries,HIDEVIEWSCREEN) }
         }
         else{
             MainScreen(
                 entrySelected ={
                     selectedEntry = it
                 },
-                entries,SHOWADDSCREEN,SHOWEDITSCREEN)
+                entries,SHOWADDSCREEN,SHOWEDITSCREEN,SHOWVIEWSCREEN)
         }
 
     }
@@ -86,7 +92,8 @@ fun MainScreen(
     entrySelected: (Entry) -> Unit,
     entries: Database,
     GOTOADDSCREEN: () -> Unit,
-    GOTOEDITSCREEN: () -> Unit
+    GOTOEDITSCREEN: () -> Unit,
+    GOTOVIEWSCREEN: () -> Unit
 ){
     var ONDELETE by remember { mutableStateOf(false) }
     val pleaseReset = {ONDELETE = true}
@@ -147,7 +154,10 @@ fun MainScreen(
             }
         }else {
             Row {
-                EntryListView(entries,GOTOEDITSCREEN,
+                EntryListView(
+                    entries,
+                    GOTOEDITSCREEN,
+                    GOTOVIEWSCREEN,
                     onEntrySelect ={
                         entrySelected(it)
                     })

@@ -52,7 +52,7 @@ fun ViewEntry(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         //
-        TitleBar("Edit Entry",GOTOMAINSCREEN)
+        TitleBar("View Entry",GOTOMAINSCREEN)
         Divider(
             thickness = 3.dp,
             color = MaterialTheme.colorScheme.inverseSurface

@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 fun EntryListView(
     entries: Database,
     GOTOEDITSCREEN: ()-> Unit,
+    GOTOVIEWSCREEN: () -> Unit,
     onEntrySelect: (Entry) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -142,7 +143,8 @@ fun EntryListView(
                     }
                 },
                 dismissContent = {
-                    EntryCard(entry = entry)
+                    EntryCard(entry, GOTOVIEWSCREEN
+                    )
                 })
 
             /**
