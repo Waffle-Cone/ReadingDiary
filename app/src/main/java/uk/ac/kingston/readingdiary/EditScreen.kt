@@ -64,6 +64,7 @@ fun EditScreen(
             value = title,
             onValueChange = {title = it},
             label ={ Text("Book Title") },
+            supportingText = {Text(text = "Required", color = MaterialTheme.colorScheme.primary)},
             keyboardOptions = KeyboardOptions.Default.copy(
                 keyboardType = KeyboardType.Text,
                 imeAction = ImeAction.Done
@@ -85,8 +86,14 @@ fun EditScreen(
                 TextField(
                     modifier = Modifier.weight(1f),
                     value = readFrom,
-                    onValueChange = { readFrom = it },
+                    onValueChange = {
+                        if(it.contains(".")||it.contains("-"))
+                        {
+                            // I dont want decimal page number or negative pg numbers
+                        }
+                        else{ readFrom = it }},
                     label = { Text("From") },
+                    supportingText = {Text(text = "Required", color = MaterialTheme.colorScheme.primary)},
                     keyboardOptions = KeyboardOptions.Default.copy(
                         keyboardType = KeyboardType.Number,
                         imeAction = ImeAction.Done
@@ -99,8 +106,14 @@ fun EditScreen(
                 TextField(
                     modifier = Modifier.weight(1f),
                     value = readTo,
-                    onValueChange = { readTo = it },
+                    onValueChange = {
+                        if(it.contains(".")||it.contains("-"))
+                        {
+                            // I dont want decimal page number or negative pg numbers
+                        }
+                        else{readTo = it}},
                     label = { Text("To") },
+                    supportingText = {Text(text = "Required", color = MaterialTheme.colorScheme.primary)},
                     keyboardOptions = KeyboardOptions.Default.copy(
                         keyboardType = KeyboardType.Number,
                         imeAction = ImeAction.Done
@@ -110,8 +123,8 @@ fun EditScreen(
             //Check if number entered is a number
             var isNumber: Boolean = true // user might type a . or - first which would crash the app if it were converted
             try {
-                readFrom.toDouble()
-                readTo.toDouble()
+                readFrom.toInt()
+                readTo.toInt()
             }catch (e:Exception)
             {
                 isNumber = false
@@ -120,14 +133,14 @@ fun EditScreen(
             }
             // when isNumber = true then safe to cast to double for checks
             if(isNumber) {
-                if (readFrom.toDouble() < 0 || readTo.toDouble() < 0) {
+                if (readFrom.toInt() < 0 || readTo.toInt() < 0) {
                     Text(
                         text = "Page numbers cannot be negative!",
                         color = MaterialTheme.colorScheme.error)
                     noPageError = false
                 }
 
-                if (readFrom.toDouble() > readTo.toDouble()) {
+                if (readFrom.toInt() > readTo.toInt()) {
                     Text(
                         text = """"Page To" must be bigger than or equal to "Page From"""",
                         color = MaterialTheme.colorScheme.error
@@ -146,7 +159,7 @@ fun EditScreen(
                 modifier = Modifier.absolutePadding(10.dp)
             )
 
-            StarRating(
+            HeartRating(
                 modifier = Modifier.size(50.dp),
                 rating = rating
             ) {
@@ -195,8 +208,8 @@ fun EditScreen(
         if(shouldSubmit)
         {
             newEntry.title = title
-            newEntry.pageFrom = readFrom.toDouble()
-            newEntry.pageTo = readTo.toDouble()
+            newEntry.pageFrom = readFrom.toInt()
+            newEntry.pageTo = readTo.toInt()
             newEntry.rating = rating
             newEntry.comment = comments
             selectedEntry?.let { entries.updateItem(it.id,newEntry) }

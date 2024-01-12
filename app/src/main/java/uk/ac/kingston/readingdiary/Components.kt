@@ -1,17 +1,14 @@
 package uk.ac.kingston.readingdiary
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
-import androidx.compose.material.icons.rounded.Star
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.DisplayMode
@@ -22,7 +19,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -100,7 +96,7 @@ fun DateTimePicker(dateTime: LocalDateTime, entry: Entry)
 
 // getting the hearts to work
 @Composable
-fun StarRating(
+fun HeartRating(
     isClickable: Boolean = true,
     modifier: Modifier = Modifier,
     rating: Int = 0,
@@ -137,6 +133,40 @@ fun StarRating(
                 )
             }
 
+        }
+    }
+}
+
+@Composable
+fun myDisplayText(
+  text: String = "",
+  title: String = "",
+  bookTitle: Boolean = false,
+  modifier: Modifier = Modifier
+){
+    if(bookTitle)
+    {
+        Column(modifier = modifier) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelMedium
+            )
+            Text(
+                text = text,
+                style = MaterialTheme.typography.headlineLarge
+            )
+        }
+    }
+    else{
+        Column(modifier = modifier) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelMedium
+            )
+            Text(
+                text = text,
+                style = MaterialTheme.typography.bodyLarge
+            )
         }
     }
 }
