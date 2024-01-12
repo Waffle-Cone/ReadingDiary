@@ -43,7 +43,8 @@ data class Entry(var id: Int, var title: String, var pageFrom: Double = 0.0, var
 @Composable
 fun EntryCard(
     entry: Entry,
-    GOTOVIEWSCREEN: ()-> Unit
+    GOTOVIEWSCREEN: ()-> Unit,
+    onViewSelect: (Entry) -> Unit
               ) {
     Surface(color = MaterialTheme.colorScheme.primary,
         modifier = Modifier.padding(4.dp)
@@ -68,7 +69,11 @@ fun EntryCard(
                     entry.rating = it;
                 }
             }
-            ElevatedButton(onClick = {GOTOVIEWSCREEN()})
+            ElevatedButton(onClick = {
+                onViewSelect(entry)
+                GOTOVIEWSCREEN()
+            }
+            )
             {
                 Text( "View")
             }

@@ -91,7 +91,7 @@ fun EntryListView(
                     }
                     if (it == DismissValue.DismissedToEnd) // from left to right EdIT
                     {
-                        onEntrySelect(entry)
+                        onEntrySelect(entry) // o7 safe journey up to main activity then to app
                         GOTOEDITSCREEN()
                     }
                     true
@@ -143,8 +143,10 @@ fun EntryListView(
                     }
                 },
                 dismissContent = {
-                    EntryCard(entry, GOTOVIEWSCREEN
-                    )
+                    EntryCard(entry, GOTOVIEWSCREEN,
+                        onViewSelect = {
+                            onEntrySelect(it) // SEND it UP!!!
+                        })
                 })
 
             /**

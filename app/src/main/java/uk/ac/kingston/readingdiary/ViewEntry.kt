@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -59,16 +60,11 @@ fun ViewEntry(
         )
         Spacer(modifier = Modifier.absolutePadding(0.dp,10.dp))
         //edit fields
-        TextField(
-            value = title,
-            onValueChange = {title = it},
-            label ={ Text("Book Title") },
-            keyboardOptions = KeyboardOptions.Default.copy(
-                keyboardType = KeyboardType.Text,
-                imeAction = ImeAction.Done
-            )
+        Text(
+            text= title,
+            style = MaterialTheme.typography.titleLarge
         )
-        selectedEntry?.let { DateTimePicker(dateTime, it) }
+        selectedEntry?.let { Text(text = it.getDateTime()) }
 
         Column {
             Text(
@@ -122,7 +118,6 @@ fun ViewEntry(
                 rating = it;
             }
         }
-
         //Comments
         TextField(
             value = comments,
@@ -137,4 +132,24 @@ fun ViewEntry(
 
 
     }
+}
+@Preview(showBackground = true)
+@Composable
+fun PreviewViewScreen(){
+    val testBase  by remember {mutableStateOf(Database())}
+    var testEntry by remember { mutableStateOf<Entry?>(null) }
+    var newEntry by remember { mutableStateOf<Entry>(Entry(0,"title")) }
+    var TEST by rememberSaveable { mutableStateOf(false) }
+    val SHOWTEST = {TEST = true}
+    val HIDETEST = {TEST = false}
+
+    newEntry.title = "Hello"
+    newEntry.pageFrom = 7.0
+    newEntry.pageTo = 8.0
+    newEntry.rating = 5
+    newEntry.comment = "comments"
+    testBase.addEntry(newEntry)
+    testEntry = newEntry
+
+    ViewEntry(testEntry!!,testBase,SHOWTEST)
 }
