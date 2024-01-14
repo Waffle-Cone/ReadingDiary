@@ -115,8 +115,6 @@ fun WelcomeScreen(
     }
 }
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     entrySelected: (Entry) -> Unit,
@@ -132,30 +130,30 @@ fun MainScreen(
             .padding(24.dp)
     )
     {
-        Row (
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.End
-        ){
-            IconButton(
-                onClick = GOTOADDSCREEN,
-                modifier = Modifier.size(32.dp)
+        Row {
+            Row(
+                modifier = Modifier.weight(.5f)
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.Start
             ) {
-                Icon(imageVector = Icons.Rounded.AddCircle, contentDescription = null)
+                IconButton(
+                    onClick = GOTOADDSCREEN,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(imageVector = Icons.Rounded.Sort, contentDescription = null)
+                }
             }
-        }
-        Row (
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.Start
-        ){
-            IconButton(
-                onClick = GOTOADDSCREEN,
-                modifier = Modifier.size(32.dp)
+            Row(
+                modifier = Modifier.weight(.5f)
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.End
             ) {
-                Icon(imageVector = Icons.Rounded.Sort, contentDescription = null)
+                IconButton(
+                    onClick = GOTOADDSCREEN,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(imageVector = Icons.Rounded.AddCircle, contentDescription = null)
+                }
             }
         }
 
