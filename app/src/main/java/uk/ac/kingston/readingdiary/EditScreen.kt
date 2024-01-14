@@ -70,7 +70,7 @@ fun EditScreen(
                 imeAction = ImeAction.Done
             )
         )
-        selectedEntry?.let { DateTimePicker(dateTime, it) }
+        selectedEntry?.let { DateTimePicker(dateTime, it,entries) }
 
         var noPageError: Boolean= true;
         Column {

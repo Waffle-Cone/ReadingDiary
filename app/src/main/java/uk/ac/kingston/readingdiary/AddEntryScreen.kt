@@ -69,7 +69,7 @@ fun AddEntryScreen(
                 imeAction = ImeAction.Done
             )
         )
-        DateTimePicker(dateTime,newEntry)
+        DateTimePicker(dateTime,newEntry,entries)
 
         var noPageError: Boolean= true; // if any errors exist set to false
         Column {

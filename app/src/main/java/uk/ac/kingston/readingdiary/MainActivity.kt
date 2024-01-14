@@ -1,8 +1,10 @@
 package uk.ac.kingston.readingdiary
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,10 +16,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AddCircle
+import androidx.compose.material.icons.rounded.Sort
+import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -50,6 +57,8 @@ class MainActivity : ComponentActivity() {
 private fun MyApp(modifier: Modifier = Modifier) {
     val entries  by remember {mutableStateOf(Database())}
     var selectedEntry by remember { mutableStateOf<Entry?>(null) }
+    
+    var shouldShowWelcome by rememberSaveable { mutableStateOf(true) }
 
     var shouldShowAddScreen by rememberSaveable { mutableStateOf(false) }
     val SHOWADDSCREEN = {shouldShowAddScreen = true}
@@ -65,28 +74,49 @@ private fun MyApp(modifier: Modifier = Modifier) {
     Surface(modifier,
             color = MaterialTheme.colorScheme.background
     ){
-        if (shouldShowAddScreen){
-            AddEntryScreen(entries,HIDEADDSCREEN)
-        }
-        else if(shouldShowEditScreen)
-        {
-           selectedEntry?.let { EditScreen(it,entries,HIDEEDITSCREEN) }
-        }
-        else if(shouldShowViewScreen)
-        {
-            selectedEntry?.let { ViewEntry(it,entries,HIDEVIEWSCREEN) }
-        }
-        else{
-            MainScreen(
-                entrySelected ={
-                    selectedEntry = it
-                },
-                entries,SHOWADDSCREEN,SHOWEDITSCREEN,SHOWVIEWSCREEN)
+        if(!shouldShowWelcome) {
+            if (shouldShowAddScreen) {
+                AddEntryScreen(entries, HIDEADDSCREEN)
+            } else if (shouldShowEditScreen) {
+                selectedEntry?.let { EditScreen(it, entries, HIDEEDITSCREEN) }
+            } else if (shouldShowViewScreen) {
+                selectedEntry?.let { ViewEntry(it, entries, HIDEVIEWSCREEN) }
+            } else {
+                MainScreen(
+                    entrySelected = {
+                        selectedEntry = it
+                    },
+                    entries, SHOWADDSCREEN, SHOWEDITSCREEN, SHOWVIEWSCREEN
+                )
+            }
+        }else{
+            WelcomeScreen(ONGoToScheduleClicked = {shouldShowWelcome = false})
         }
 
     }
 }
 
+@Composable
+fun WelcomeScreen(
+    ONGoToScheduleClicked: () -> Unit,
+    modifier: Modifier = Modifier
+){
+    Column(
+        modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ){
+        Text ("welcome to your Reading Diary")
+        Button(
+            modifier = Modifier.padding(vertical = 24.dp),
+            onClick = ONGoToScheduleClicked){
+            Text("Go to Diary")
+        }
+    }
+}
+
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     entrySelected: (Entry) -> Unit,
@@ -95,15 +125,6 @@ fun MainScreen(
     GOTOEDITSCREEN: () -> Unit,
     GOTOVIEWSCREEN: () -> Unit
 ){
-    var ONDELETE by remember { mutableStateOf(false) }
-    val pleaseReset = {ONDELETE = true}
-    val resetOnDelete = {ONDELETE = false}
-    
-
-    if(ONDELETE)
-    {
-        Text(text = "hgvhv")
-    }
 
     Column(
         modifier = Modifier
@@ -124,6 +145,21 @@ fun MainScreen(
                 Icon(imageVector = Icons.Rounded.AddCircle, contentDescription = null)
             }
         }
+        Row (
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.Start
+        ){
+            IconButton(
+                onClick = GOTOADDSCREEN,
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(imageVector = Icons.Rounded.Sort, contentDescription = null)
+            }
+        }
+
+
 
         Divider(
             thickness = 3.dp,
@@ -158,10 +194,11 @@ fun MainScreen(
                     entries,
                     GOTOEDITSCREEN,
                     GOTOVIEWSCREEN,
-                    onEntrySelect ={
+                    onEntrySelect = {
                         entrySelected(it)
                     })
             }
+
         }
     }
 }

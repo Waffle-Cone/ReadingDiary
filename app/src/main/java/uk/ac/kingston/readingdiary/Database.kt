@@ -20,12 +20,19 @@ class Database{
     fun getEntryById(id: Int): Entry? {
         return entryList.find {it.id == id}
     }
+
+    fun getEntryByTitle(title: String): Entry?{
+        return entryList.find { it.title.lowercase() == title.lowercase() } // not case sensitive search
+    }
+
+    fun searchEntries(search: String): List<Entry>{
+        return entryList.filter {it.title.contains(search, ignoreCase = true) }
+    }
     fun updateItem(id: Int, newItem: Entry): Boolean
     {
         val existingEntry = getEntryById(id)
         if (existingEntry != null){
             existingEntry.title = newItem.title
-            existingEntry.dateTime = newItem.dateTime
             existingEntry.pageFrom = newItem.pageFrom
             existingEntry.pageTo = newItem.pageTo
             existingEntry.rating = newItem.rating
