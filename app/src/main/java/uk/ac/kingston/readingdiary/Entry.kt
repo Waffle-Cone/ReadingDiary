@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-data class Entry(var id: Int, var title: String, var pageFrom: Int =0, var pageTo: Int =0, var rating: Int = 0, var comment: String = "", var dateTime: LocalDateTime =LocalDateTime.now()){
+data class Entry(val creationOrder:Int,var id: Int, var title: String, var pageFrom: Int =0, var pageTo: Int =0, var rating: Int = 0, var comment: String = "", var dateTime: LocalDateTime =LocalDateTime.now()){
     private val myDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm")
     fun getDateTime(): String
     {
@@ -36,7 +36,8 @@ fun EntryCard(
     onViewSelect: (Entry) -> Unit
               ) {
     Surface(color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(4.dp)
+        modifier = Modifier
+            .padding(4.dp)
             .fillMaxSize())
     {
         Row(modifier = Modifier.padding(24.dp))
@@ -50,8 +51,9 @@ fun EntryCard(
                     Text(text = "Pg.${entry.pageFrom} - Pg.${entry.pageTo}")
                 }
                 HeartRating(
-                    modifier = Modifier.size(20.dp)
-                        .absolutePadding(0.dp,10.dp),
+                    modifier = Modifier
+                        .size(20.dp)
+                        .absolutePadding(0.dp, 10.dp),
                     rating = entry.rating,
                     isClickable = false
                 ){

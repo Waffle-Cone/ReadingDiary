@@ -112,7 +112,7 @@ fun ViewEntry(
 fun PreviewViewScreen(){
     val testBase  by remember {mutableStateOf(Database())}
     var testEntry by remember { mutableStateOf<Entry?>(null) }
-    var newEntry by remember { mutableStateOf<Entry>(Entry(0,"title")) }
+    var newEntry by remember { mutableStateOf<Entry>(Entry(0,0,"hello")) }
     var TEST by rememberSaveable { mutableStateOf(false) }
     val SHOWTEST = {TEST = true}
     val HIDETEST = {TEST = false}

@@ -2,6 +2,7 @@ package uk.ac.kingston.readingdiary
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.widget.Spinner
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
@@ -16,9 +17,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AddCircle
+import androidx.compose.material.icons.rounded.Create
+import androidx.compose.material.icons.rounded.DateRange
 import androidx.compose.material.icons.rounded.Sort
+import androidx.compose.material.icons.rounded.SortByAlpha
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -63,6 +68,7 @@ private fun MyApp(modifier: Modifier = Modifier) {
     var shouldShowAddScreen by rememberSaveable { mutableStateOf(false) }
     val SHOWADDSCREEN = {shouldShowAddScreen = true}
     val HIDEADDSCREEN = {shouldShowAddScreen = false}
+    var ONUPDATE: ()->Unit ={}
 
     var shouldShowEditScreen by rememberSaveable { mutableStateOf(false) }
     val SHOWEDITSCREEN = {shouldShowEditScreen = true}
@@ -71,6 +77,8 @@ private fun MyApp(modifier: Modifier = Modifier) {
     var shouldShowViewScreen by rememberSaveable { mutableStateOf(false) }
     val SHOWVIEWSCREEN = {shouldShowViewScreen = true}
     val HIDEVIEWSCREEN = {shouldShowViewScreen = false}
+
+
     Surface(modifier,
             color = MaterialTheme.colorScheme.background
     ){
@@ -78,7 +86,7 @@ private fun MyApp(modifier: Modifier = Modifier) {
             if (shouldShowAddScreen) {
                 AddEntryScreen(entries, HIDEADDSCREEN)
             } else if (shouldShowEditScreen) {
-                selectedEntry?.let { EditScreen(it, entries, HIDEEDITSCREEN) }
+                selectedEntry?.let { EditScreen(it, entries, HIDEEDITSCREEN,ONUPDATE) }
             } else if (shouldShowViewScreen) {
                 selectedEntry?.let { ViewEntry(it, entries, HIDEVIEWSCREEN) }
             } else {
@@ -86,7 +94,7 @@ private fun MyApp(modifier: Modifier = Modifier) {
                     entrySelected = {
                         selectedEntry = it
                     },
-                    entries, SHOWADDSCREEN, SHOWEDITSCREEN, SHOWVIEWSCREEN
+                    entries, ONDELETE = {ONUPDATE = it},SHOWADDSCREEN, SHOWEDITSCREEN, SHOWVIEWSCREEN
                 )
             }
         }else{
@@ -119,10 +127,23 @@ fun WelcomeScreen(
 fun MainScreen(
     entrySelected: (Entry) -> Unit,
     entries: Database,
+    ONDELETE: (()->Unit)->Unit,
     GOTOADDSCREEN: () -> Unit,
     GOTOEDITSCREEN: () -> Unit,
     GOTOVIEWSCREEN: () -> Unit
 ){
+
+    var sortBy by rememberSaveable { mutableStateOf<String?>(null) }
+
+    var isSorting by rememberSaveable { mutableStateOf(false) }
+    val yesSorting = {isSorting = true}
+    val notSorting = {isSorting = false }
+
+    var sortingMode by rememberSaveable { mutableStateOf(false) }
+
+    val ONCREATIONSORT = {entries.sortByCreation()}
+    val ONDATESORT = { entries.sortByDate() }
+    val ONTITLESORT = { entries.sortByTitle() }
 
     Column(
         modifier = Modifier
@@ -132,19 +153,96 @@ fun MainScreen(
     {
         Row {
             Row(
-                modifier = Modifier.weight(.5f)
+                modifier = Modifier
+                    .weight(.5f)
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.Start
-            ) {
+            ) 
+            {
+                var expanded by remember { mutableStateOf(false) }
                 IconButton(
-                    onClick = GOTOADDSCREEN,
+                    onClick = {expanded = true},
                     modifier = Modifier.size(32.dp)
                 ) {
-                    Icon(imageVector = Icons.Rounded.Sort, contentDescription = null)
+                    Icon(imageVector = Icons.Rounded.Sort, contentDescription = "sort")
+                }
+                DropdownMenu(
+                    modifier = Modifier.padding(horizontal = 10.dp),
+                    expanded = expanded,
+                    onDismissRequest = {expanded = false}
+                    ){
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(5.dp)
+                    ){
+                        Row(
+                            modifier= Modifier
+                                .clickable {
+                                    ONCREATIONSORT()
+                                    sortBy = null
+                                    isSorting = false
+                                    expanded = false
+                                }
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .padding(end = 14.dp),
+                                imageVector = Icons.Rounded.Create,
+                                contentDescription = "ID"
+                            )
+                            Text(text = "Created")
+                        }
+
+                        Row(
+                            modifier= Modifier
+                                .clickable {
+                                    ONDATESORT()
+                                    isSorting = true
+                                    sortBy = "Date"
+                                    expanded = false
+                                }
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .padding(end = 14.dp),
+                                imageVector = Icons.Rounded.DateRange,
+                                contentDescription = "sortByDate"
+                            )
+                            Text(text = "Date")
+                        }
+                        Row(
+                            modifier= Modifier
+                                .clickable {
+
+                                    ONTITLESORT()
+                                    isSorting = true
+                                    sortBy = "Title"
+                                    expanded = false
+                                }
+                                .fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .padding(end = 14.dp),
+                                imageVector = Icons.Rounded.SortByAlpha,
+                                contentDescription = "sortByAlphabeticalOrder"
+                            )
+                            Text(text = "Title")
+                        }
+                    }
+
                 }
             }
             Row(
-                modifier = Modifier.weight(.5f)
+                modifier = Modifier
+                    .weight(.5f)
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.End
             ) {
@@ -152,7 +250,7 @@ fun MainScreen(
                     onClick = GOTOADDSCREEN,
                     modifier = Modifier.size(32.dp)
                 ) {
-                    Icon(imageVector = Icons.Rounded.AddCircle, contentDescription = null)
+                    Icon(imageVector = Icons.Rounded.AddCircle, contentDescription = "Add entry")
                 }
             }
         }
@@ -190,8 +288,11 @@ fun MainScreen(
             Row {
                 EntryListView(
                     entries,
+                    sortBy = sortBy,
+                    isSorting,
                     GOTOEDITSCREEN,
                     GOTOVIEWSCREEN,
+                    ONDELETE= {ONDELETE(it)},
                     onEntrySelect = {
                         entrySelected(it)
                     })

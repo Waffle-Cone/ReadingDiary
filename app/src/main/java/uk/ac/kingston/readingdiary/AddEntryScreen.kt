@@ -39,11 +39,11 @@ fun AddEntryScreen(
     val id = entries.getAllEntries().size
     var title by rememberSaveable { mutableStateOf("") }
     var comments by rememberSaveable { mutableStateOf("") }
-    var readFrom by rememberSaveable { mutableStateOf("") }
-    var readTo by rememberSaveable { mutableStateOf("") }
+    var readFrom by rememberSaveable { mutableStateOf("0") }
+    var readTo by rememberSaveable { mutableStateOf("0") }
     var rating by rememberSaveable { mutableStateOf(0) }
     var dateTime by rememberSaveable { mutableStateOf(LocalDateTime.now()) };
-    var newEntry by remember { mutableStateOf<Entry>(Entry(id,title)) }
+    var newEntry by remember { mutableStateOf<Entry>(Entry(id,id,title)) }
 
     Column(
         modifier = Modifier

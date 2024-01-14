@@ -33,7 +33,8 @@ import androidx.compose.ui.unit.dp
 fun EditScreen(
     selectedID: Entry,
     entries: Database,
-    GOTOMAINSCREEN: () -> Unit)
+    GOTOMAINSCREEN: () -> Unit,
+    ONUPDATE:()->Unit)
 {
     var shouldSubmit by remember { mutableStateOf(false) }
     var selectedEntry by remember { mutableStateOf(entries.getEntryById(selectedID.id)) }
@@ -44,7 +45,7 @@ fun EditScreen(
     var readTo by rememberSaveable { mutableStateOf(selectedEntry!!.pageTo.toString()) }
     var rating by rememberSaveable { mutableStateOf(selectedEntry!!.rating) }
     var dateTime by rememberSaveable { mutableStateOf(selectedEntry!!.dateTime) };
-    var newEntry by remember { mutableStateOf<Entry>(Entry(id,title)) }
+    var newEntry by remember { mutableStateOf<Entry>(Entry(id,id,title)) }
 
     Column(
         modifier = Modifier
@@ -213,6 +214,7 @@ fun EditScreen(
             newEntry.rating = rating
             newEntry.comment = comments
             selectedEntry?.let { entries.updateItem(it.id,newEntry) }
+            ONUPDATE()
             GOTOMAINSCREEN();
         }
     }

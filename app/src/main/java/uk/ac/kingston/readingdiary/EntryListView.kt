@@ -25,6 +25,7 @@ import androidx.compose.material3.DismissDirection
 import androidx.compose.material3.DismissValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
@@ -38,29 +39,40 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EntryListView(
     entries: Database,
+    sortBy: String?,
+    sortingStatus: Boolean,
     GOTOEDITSCREEN: ()-> Unit,
     GOTOVIEWSCREEN: () -> Unit,
-    onEntrySelect: (Entry) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    var showConfirm by rememberSaveable { mutableStateOf(false) }
-    val hideConfirm = {showConfirm = false}
+    ONDELETE:(()->Unit)->Unit,
+    onEntrySelect: (Entry) -> Unit) {
     var selectedEntry by remember { mutableStateOf<Entry?>(null) }
-
     var searchText by remember { mutableStateOf("") }
     var searchActive by remember { mutableStateOf(false) }
     var searchHistory = remember { mutableStateListOf<String>() }
 
+
+    var isShowConfirm by rememberSaveable { mutableStateOf(false) }
+    val hideConfirm = {isShowConfirm = false}
+    val showConfirm = {isShowConfirm = true}
+
+    var isThisDELETEONE by rememberSaveable { mutableStateOf(true) }
+    val DELETEONE = {isThisDELETEONE = true}
+    val DELETETWO = {isThisDELETEONE = false}
+
+
+// search
     Column {
         SearchBar(
             query = searchText,
@@ -77,7 +89,8 @@ fun EntryListView(
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Rounded.Search,
-                    contentDescription = "Search" )
+                    contentDescription = "Search"
+                )
             },
             trailingIcon = {
                 if (searchText.isNotEmpty()) {
@@ -103,7 +116,7 @@ fun EntryListView(
                             }
                     ) {
                         Icon(
-                            modifier= Modifier.padding(end = 10.dp),
+                            modifier = Modifier.padding(end = 10.dp),
                             imageVector = Icons.Rounded.Search,
                             contentDescription = "search Entry"
                         )
@@ -122,7 +135,7 @@ fun EntryListView(
                         }
                 ) {
                     Icon(
-                        modifier= Modifier.padding(end = 10.dp),
+                        modifier = Modifier.padding(end = 10.dp),
                         imageVector = Icons.Rounded.Refresh,
                         contentDescription = "History Icon"
                     )
@@ -132,118 +145,212 @@ fun EntryListView(
 
         }
 
-        LazyColumn(
-            modifier.padding(vertical = 5.dp),
-            state = rememberLazyListState()
-        )
-        {
-            items(items = entries.searchEntries(searchText))
-            { entry -> // this is wrong after deleting a few entries
-                val dismissState = rememberDismissState(
-                    confirmValueChange = {
-                        if (it == DismissValue.DismissedToStart) // from right to left DELETE
-                        {
+        /**
+         * this jus forces the list to recompose everytime because ei was running into so many issues
+         * with the selected item not being correct after deleting
+         */
+        if (sortingStatus) {
+            if (sortBy.equals("Title")) {
+                if (isThisDELETEONE) {
+                    ItemRendering(entries,sortState = sortBy, searchText, DELETEONE, DELETETWO,
+                        ONDELETE = { ONDELETE(it) }, GOTOEDITSCREEN, GOTOVIEWSCREEN,
+                        onEntrySelect = {
+                            onEntrySelect(it)
+                            selectedEntry = it
+                        })
+                } else{
+                    ItemRendering(entries,
+                        sortState = sortBy, searchText, DELETEONE, DELETETWO,
+                        ONDELETE = { ONDELETE(it) }, GOTOEDITSCREEN, GOTOVIEWSCREEN,
+                        onEntrySelect = {
+                            onEntrySelect(it)
+                            selectedEntry = it
+                        })
+                }
 
-                            selectedEntry =
-                                entries.getEntryById(entry.id) // directly setting the selectedEntry to the entry from the lazyList gives me the wrong one!!!!! BUT the ID is correct :)
-                            Log.i(
-                                "tag1",
-                                "Selected title: ${entries.getEntryById(entry.id)?.title}"
-                            )
-                            Log.i("tag1", "Selected id: ${entry.id}")
-                            Log.i("tag1", "  INSIDE SLIDE ${entries.getAllEntries().toString()}")
-                            showConfirm = true
-                        }
-                        if (it == DismissValue.DismissedToEnd) // from left to right EdIT
-                        {
-                            onEntrySelect(entry) // o7 safe journey up to main activity then to app
-                            GOTOEDITSCREEN()
-                        }
-                        true
-                    },
-                )
-                /**
-                 * Doing this was a headache because I introduced animations which, as you will see later
-                 * required me to figure out how to run suspend functions and get my head around what a
-                 * coroutineScope was -> explained bellow
-                 */
-                SwipeToDismiss(
-                    state = dismissState,
-                    background = {
-                        var color: Color = Color.Transparent
-                        var image: ImageVector = Icons.Rounded.Delete
-                        var alignment: Alignment = Alignment.CenterEnd
-                        var description: String = "Delete"
-
-                        if (dismissState.dismissDirection == DismissDirection.EndToStart) // iff slide right to left
-                        {
-                            color = Color.Red
-                            image = Icons.Rounded.Delete
-                            alignment = Alignment.CenterEnd
-                            description = "Delete"
-                        } else if (dismissState.dismissDirection == DismissDirection.StartToEnd) // if slide item left to right
-                        {
-                            color = Color.Green
-                            image = Icons.Rounded.Edit
-                            alignment = Alignment.CenterStart
-                            description = "Edit"
-
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(color),
-                        ) {
-                            Icon(
-                                imageVector = image,
-                                contentDescription = description,
-                                modifier = Modifier.align(alignment)
-                            )
-                        }
-                    },
-                    dismissContent = {
-                        EntryCard(entry, GOTOVIEWSCREEN,
-                            onViewSelect = {
-                                onEntrySelect(it) // SEND it UP!!!
-                            })
+            } else if (sortBy.equals("Date")) {
+                if (isThisDELETEONE) {
+                    ItemRendering(entries,sortState = sortBy, searchText, DELETEONE, DELETETWO,
+                        ONDELETE = { ONDELETE(it) }, GOTOEDITSCREEN, GOTOVIEWSCREEN,
+                        onEntrySelect = {
+                            onEntrySelect(it)
+                            selectedEntry = it
+                        })
+                } else{
+                    ItemRendering(entries,
+                        sortState = sortBy, searchText, DELETEONE, DELETETWO,
+                        ONDELETE = { ONDELETE(it) }, GOTOEDITSCREEN, GOTOVIEWSCREEN,
+                        onEntrySelect = {
+                            onEntrySelect(it)
+                            selectedEntry = it
+                        })
+                }
+            }
+        } else {
+            if (isThisDELETEONE) {
+                ItemRendering(entries,sortState = sortBy, searchText, DELETEONE, DELETETWO,
+                    ONDELETE = { ONDELETE(it) }, GOTOEDITSCREEN, GOTOVIEWSCREEN,
+                    onEntrySelect = {
+                        onEntrySelect(it)
+                        selectedEntry = it
                     })
+            } else{
+                ItemRendering(entries,
+                    sortState = sortBy, searchText, DELETEONE, DELETETWO,
+                    ONDELETE = { ONDELETE(it) }, GOTOEDITSCREEN, GOTOVIEWSCREEN,
+                    onEntrySelect = {
+                        onEntrySelect(it)
+                        selectedEntry = it
+                    })
+            }
 
-                /**
-                 * from what i understand: the function dismissState.reset() is a "Suspend Function"
-                 * which makes it act kinda like the asynchronous functions in REACTJS.
-                 *
-                 *
-                 * !!! asynchronous is called coroutineScope in kotlin and the suspend function
-                 * must be run within this scope
-                 * this is probably because it is an animation which must be waited upon. Basically
-                 * the app has to wait until the slide animation is complete before it can "reset" the
-                 * animation back
-                 *
-                 * according to kotlin documentation ->
-                 * LaunchedEffect: run suspend functions in the scope of a composable
-                 *
-                 * this is exactly what i want to do, thus i am using it here
-                 */
+        }
+    }
 
-                if (dismissState.currentValue != DismissValue.Default) {
-                    LaunchedEffect(Unit) {
-                        dismissState.reset() // make my entry go back to normal when i cancel delete
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ItemRendering(
+    entries: Database,
+    sortState: String? = null,
+    searchText: String,
+    DELETEONE: ()-> Unit,
+    DELETETWO: ()-> Unit,
+    ONDELETE: (() -> Unit) -> Unit,
+    GOTOEDITSCREEN: ()-> Unit,
+    GOTOVIEWSCREEN: () -> Unit,
+    onEntrySelect: (Entry) -> Unit,
+) {
+    DELETEONE()
+    var selectedEntry by remember { mutableStateOf<Entry?>(null) }
+
+    var isShowConfirm by rememberSaveable { mutableStateOf(false) }
+    val hideConfirm = {isShowConfirm = false}
+    val showConfirm = {isShowConfirm = true}
+    sortState?.let {
+        Text(
+        text = "Sorting by: $it",
+        style = MaterialTheme.typography.labelMedium,
+        modifier = Modifier.padding(5.dp)) }
+    LazyColumn(
+        modifier = Modifier.padding(vertical = 5.dp),
+        state = rememberLazyListState()
+    )
+    {
+        items(items = entries.searchEntries(searchText))
+        { entry -> // this is wrong after deleting a few entries
+            val dismissState = rememberDismissState(
+                confirmValueChange = {
+                    if (it == DismissValue.DismissedToStart) // from right to left DELETE
+                    {
+                        selectedEntry =
+                            entries.getEntryById(entry.id)
+                        Log.i(
+                            "tag1",
+                            "Selected entry: ${entry.title}"
+                        )
+                        Log.i(
+                            "tag1",
+                            "Selected title: ${entries.getEntryById(entry.id)?.title}"
+                        )
+                        Log.i("tag1", "Selected id: ${entry.id}")
+                        Log.i(
+                            "tag1",
+                            "  INSIDE SLIDE ${entries.getAllEntries().toString()}"
+                        )
+                        selectedEntry?.let { it1 -> onEntrySelect(it1) }
+                        showConfirm()
                     }
+                    if (it == DismissValue.DismissedToEnd) // from left to right EdIT
+                    {
+                        onEntrySelect(entry) // o7 safe journey up to main activity then to app
+                        ONDELETE(DELETETWO)
+                        GOTOEDITSCREEN()
+                    }
+                    true
+                },
+            )
+            /**
+             * Doing this was a headache because I introduced animations which, as you will see later
+             * required me to figure out how to run suspend functions and get my head around what a
+             * coroutineScope was -> explained bellow
+             */
+            SwipeToDismiss(
+                state = dismissState,
+                background = {
+                    var color: Color = Color.Transparent
+                    var image: ImageVector = Icons.Rounded.Delete
+                    var alignment: Alignment = Alignment.CenterEnd
+                    var description: String = "Delete"
+                    if (dismissState.dismissDirection == DismissDirection.EndToStart) // iff slide right to left
+                    {
+                        color = Color.Red
+                        image = Icons.Rounded.Delete
+                        alignment = Alignment.CenterEnd
+                        description = "Delete"
+                    } else if (dismissState.dismissDirection == DismissDirection.StartToEnd) // if slide item left to right
+                    {
+                        color = Color.Green
+                        image = Icons.Rounded.Edit
+                        alignment = Alignment.CenterStart
+                        description = "Edit"
+
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(color),
+                    ) {
+                        Icon(
+                            imageVector = image,
+                            contentDescription = description,
+                            modifier = Modifier.align(alignment)
+                        )
+                    }
+                },
+                dismissContent = {
+                    EntryCard(entry, GOTOVIEWSCREEN,
+                        onViewSelect = {
+                            onEntrySelect(it) // SEND it UP!!!
+                        })
+                })
+
+            /**
+             * from what i understand: the function dismissState.reset() is a "Suspend Function"
+             * which makes it act kinda like the asynchronous functions in REACTJS.
+             *
+             *
+             * !!! asynchronous is called coroutineScope in kotlin and the suspend function
+             * must be run within this scope
+             * this is probably because it is an animation which must be waited upon. Basically
+             * the app has to wait until the slide animation is complete before it can "reset" the
+             * animation back
+             *
+             * according to kotlin documentation ->
+             * LaunchedEffect: run suspend functions in the scope of a composable
+             *
+             * this is exactly what i want to do, thus i am using it here
+             */
+
+            if (dismissState.currentValue != DismissValue.Default) {
+                LaunchedEffect(Unit) {
+                    dismissState.reset() // make my entry go back to normal when i cancel delete
                 }
             }
         }
     }
-
     // delete confirmation modal
-    if (showConfirm) {
+    if (isShowConfirm) {
         AlertDialog(
-            onDismissRequest = { showConfirm = false },
+            onDismissRequest = { isShowConfirm = false },
             title = { Text(text = "Delete Confirmation") },
             text = { Text(text = "Delete Book: ${selectedEntry?.title}?") },
             confirmButton = {
                 TextButton(
                     onClick = {
+                        DELETETWO()
                         selectedEntry?.id?.let { entries.deleteEntry(it, hideConfirm) }
                     },
                 ) {
@@ -252,7 +359,7 @@ fun EntryListView(
             },
             dismissButton = {
                 TextButton(
-                    onClick = { showConfirm = false },
+                    onClick = { isShowConfirm = false },
                 ) {
                     Text(text = "Cancel")
                 }
@@ -260,4 +367,3 @@ fun EntryListView(
         )
     }
 }
-
