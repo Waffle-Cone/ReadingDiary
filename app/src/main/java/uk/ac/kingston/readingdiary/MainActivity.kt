@@ -1,8 +1,6 @@
 package uk.ac.kingston.readingdiary
 
-import android.annotation.SuppressLint
 import android.os.Bundle
-import android.widget.Spinner
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
@@ -24,25 +22,19 @@ import androidx.compose.material.icons.rounded.SortByAlpha
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import uk.ac.kingston.readingdiary.ui.theme.ReadingDiaryTheme
 
@@ -94,7 +86,7 @@ private fun MyApp(modifier: Modifier = Modifier) {
                     entrySelected = {
                         selectedEntry = it
                     },
-                    entries, ONDELETE = {ONUPDATE = it},SHOWADDSCREEN, SHOWEDITSCREEN, SHOWVIEWSCREEN
+                    entries, ONUPDATE = {ONUPDATE = it},SHOWADDSCREEN, SHOWEDITSCREEN, SHOWVIEWSCREEN
                 )
             }
         }else{
@@ -127,7 +119,7 @@ fun WelcomeScreen(
 fun MainScreen(
     entrySelected: (Entry) -> Unit,
     entries: Database,
-    ONDELETE: (()->Unit)->Unit,
+    ONUPDATE: (()->Unit)->Unit,
     GOTOADDSCREEN: () -> Unit,
     GOTOEDITSCREEN: () -> Unit,
     GOTOVIEWSCREEN: () -> Unit
@@ -136,10 +128,6 @@ fun MainScreen(
     var sortBy by rememberSaveable { mutableStateOf<String?>(null) }
 
     var isSorting by rememberSaveable { mutableStateOf(false) }
-    val yesSorting = {isSorting = true}
-    val notSorting = {isSorting = false }
-
-    var sortingMode by rememberSaveable { mutableStateOf(false) }
 
     val ONCREATIONSORT = {entries.sortByCreation()}
     val ONDATESORT = { entries.sortByDate() }
@@ -292,7 +280,7 @@ fun MainScreen(
                     isSorting,
                     GOTOEDITSCREEN,
                     GOTOVIEWSCREEN,
-                    ONDELETE= {ONDELETE(it)},
+                    ONUPDATE= {ONUPDATE(it)},
                     onEntrySelect = {
                         entrySelected(it)
                     })

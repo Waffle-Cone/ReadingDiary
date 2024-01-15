@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Clear
-import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Refresh
@@ -39,12 +38,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,17 +52,12 @@ fun EntryListView(
     sortingStatus: Boolean,
     GOTOEDITSCREEN: ()-> Unit,
     GOTOVIEWSCREEN: () -> Unit,
-    ONDELETE:(()->Unit)->Unit,
+    ONUPDATE:(()->Unit)->Unit,
     onEntrySelect: (Entry) -> Unit) {
     var selectedEntry by remember { mutableStateOf<Entry?>(null) }
     var searchText by remember { mutableStateOf("") }
     var searchActive by remember { mutableStateOf(false) }
-    var searchHistory = remember { mutableStateListOf<String>() }
-
-
-    var isShowConfirm by rememberSaveable { mutableStateOf(false) }
-    val hideConfirm = {isShowConfirm = false}
-    val showConfirm = {isShowConfirm = true}
+    val searchHistory = remember { mutableStateListOf<String>() }
 
     var isThisDELETEONE by rememberSaveable { mutableStateOf(true) }
     val DELETEONE = {isThisDELETEONE = true}
@@ -120,7 +112,7 @@ fun EntryListView(
                             imageVector = Icons.Rounded.Search,
                             contentDescription = "search Entry"
                         )
-                        Text(text = "${entry.title}")
+                        Text(text = entry.title)
                     }
                 }
                 Spacer(modifier = Modifier.absolutePadding(bottom = 10.dp))
@@ -139,7 +131,7 @@ fun EntryListView(
                         imageVector = Icons.Rounded.Refresh,
                         contentDescription = "History Icon"
                     )
-                    Text(text = "${text}")
+                    Text(text = text)
                 }
             }
 
@@ -153,7 +145,7 @@ fun EntryListView(
             if (sortBy.equals("Title")) {
                 if (isThisDELETEONE) {
                     ItemRendering(entries,sortState = sortBy, searchText, DELETEONE, DELETETWO,
-                        ONDELETE = { ONDELETE(it) }, GOTOEDITSCREEN, GOTOVIEWSCREEN,
+                        ONUPDATE = { ONUPDATE(it) }, GOTOEDITSCREEN, GOTOVIEWSCREEN,
                         onEntrySelect = {
                             onEntrySelect(it)
                             selectedEntry = it
@@ -161,7 +153,7 @@ fun EntryListView(
                 } else{
                     ItemRendering(entries,
                         sortState = sortBy, searchText, DELETEONE, DELETETWO,
-                        ONDELETE = { ONDELETE(it) }, GOTOEDITSCREEN, GOTOVIEWSCREEN,
+                        ONUPDATE = { ONUPDATE(it) }, GOTOEDITSCREEN, GOTOVIEWSCREEN,
                         onEntrySelect = {
                             onEntrySelect(it)
                             selectedEntry = it
@@ -171,7 +163,7 @@ fun EntryListView(
             } else if (sortBy.equals("Date")) {
                 if (isThisDELETEONE) {
                     ItemRendering(entries,sortState = sortBy, searchText, DELETEONE, DELETETWO,
-                        ONDELETE = { ONDELETE(it) }, GOTOEDITSCREEN, GOTOVIEWSCREEN,
+                        ONUPDATE = { ONUPDATE(it) }, GOTOEDITSCREEN, GOTOVIEWSCREEN,
                         onEntrySelect = {
                             onEntrySelect(it)
                             selectedEntry = it
@@ -179,7 +171,7 @@ fun EntryListView(
                 } else{
                     ItemRendering(entries,
                         sortState = sortBy, searchText, DELETEONE, DELETETWO,
-                        ONDELETE = { ONDELETE(it) }, GOTOEDITSCREEN, GOTOVIEWSCREEN,
+                        ONUPDATE = { ONUPDATE(it) }, GOTOEDITSCREEN, GOTOVIEWSCREEN,
                         onEntrySelect = {
                             onEntrySelect(it)
                             selectedEntry = it
@@ -189,7 +181,7 @@ fun EntryListView(
         } else {
             if (isThisDELETEONE) {
                 ItemRendering(entries,sortState = sortBy, searchText, DELETEONE, DELETETWO,
-                    ONDELETE = { ONDELETE(it) }, GOTOEDITSCREEN, GOTOVIEWSCREEN,
+                    ONUPDATE = { ONUPDATE(it) }, GOTOEDITSCREEN, GOTOVIEWSCREEN,
                     onEntrySelect = {
                         onEntrySelect(it)
                         selectedEntry = it
@@ -197,7 +189,7 @@ fun EntryListView(
             } else{
                 ItemRendering(entries,
                     sortState = sortBy, searchText, DELETEONE, DELETETWO,
-                    ONDELETE = { ONDELETE(it) }, GOTOEDITSCREEN, GOTOVIEWSCREEN,
+                    ONUPDATE = { ONUPDATE(it) }, GOTOEDITSCREEN, GOTOVIEWSCREEN,
                     onEntrySelect = {
                         onEntrySelect(it)
                         selectedEntry = it
@@ -217,7 +209,7 @@ fun ItemRendering(
     searchText: String,
     DELETEONE: ()-> Unit,
     DELETETWO: ()-> Unit,
-    ONDELETE: (() -> Unit) -> Unit,
+    ONUPDATE: (() -> Unit) -> Unit,
     GOTOEDITSCREEN: ()-> Unit,
     GOTOVIEWSCREEN: () -> Unit,
     onEntrySelect: (Entry) -> Unit,
@@ -265,7 +257,7 @@ fun ItemRendering(
                     if (it == DismissValue.DismissedToEnd) // from left to right EdIT
                     {
                         onEntrySelect(entry) // o7 safe journey up to main activity then to app
-                        ONDELETE(DELETETWO)
+                        ONUPDATE(DELETETWO)
                         GOTOEDITSCREEN()
                     }
                     true
@@ -282,7 +274,7 @@ fun ItemRendering(
                     var color: Color = Color.Transparent
                     var image: ImageVector = Icons.Rounded.Delete
                     var alignment: Alignment = Alignment.CenterEnd
-                    var description: String = "Delete"
+                    var description = "Delete"
                     if (dismissState.dismissDirection == DismissDirection.EndToStart) // iff slide right to left
                     {
                         color = Color.Red

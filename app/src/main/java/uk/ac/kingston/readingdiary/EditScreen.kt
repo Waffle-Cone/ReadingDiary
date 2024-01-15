@@ -37,15 +37,15 @@ fun EditScreen(
     ONUPDATE:()->Unit)
 {
     var shouldSubmit by remember { mutableStateOf(false) }
-    var selectedEntry by remember { mutableStateOf(entries.getEntryById(selectedID.id)) }
+    val selectedEntry by remember { mutableStateOf(entries.getEntryById(selectedID.id)) }
     val id = entries.getAllEntries().size+1
     var title by rememberSaveable { mutableStateOf( selectedEntry!!.title) }
     var comments by rememberSaveable { mutableStateOf(selectedEntry!!.comment) }
     var readFrom by rememberSaveable { mutableStateOf(selectedEntry!!.pageFrom.toString()) }
     var readTo by rememberSaveable { mutableStateOf(selectedEntry!!.pageTo.toString()) }
     var rating by rememberSaveable { mutableStateOf(selectedEntry!!.rating) }
-    var dateTime by rememberSaveable { mutableStateOf(selectedEntry!!.dateTime) };
-    var newEntry by remember { mutableStateOf<Entry>(Entry(id,id,title)) }
+    val dateTime by rememberSaveable { mutableStateOf(selectedEntry!!.dateTime) }
+    val newEntry by remember { mutableStateOf<Entry>(Entry(id,id,title)) }
 
     Column(
         modifier = Modifier
@@ -71,9 +71,9 @@ fun EditScreen(
                 imeAction = ImeAction.Done
             )
         )
-        selectedEntry?.let { DateTimePicker(dateTime, it,entries) }
+        selectedEntry?.let { DateTimePicker(dateTime, it) }
 
-        var noPageError: Boolean= true;
+        var noPageError = true
         Column {
             Text(
                 text = "Pages Read",
@@ -122,7 +122,7 @@ fun EditScreen(
                 )
             }
             //Check if number entered is a number
-            var isNumber: Boolean = true // user might type a . or - first which would crash the app if it were converted
+            var isNumber = true // user might type a . or - first which would crash the app if it were converted
             try {
                 readFrom.toInt()
                 readTo.toInt()
@@ -164,7 +164,7 @@ fun EditScreen(
                 modifier = Modifier.size(50.dp),
                 rating = rating
             ) {
-                rating = it;
+                rating = it
             }
         }
 
@@ -215,7 +215,7 @@ fun EditScreen(
             newEntry.comment = comments
             selectedEntry?.let { entries.updateItem(it.id,newEntry) }
             ONUPDATE()
-            GOTOMAINSCREEN();
+            GOTOMAINSCREEN()
         }
     }
 }

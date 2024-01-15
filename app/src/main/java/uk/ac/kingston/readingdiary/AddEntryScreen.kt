@@ -42,8 +42,8 @@ fun AddEntryScreen(
     var readFrom by rememberSaveable { mutableStateOf("0") }
     var readTo by rememberSaveable { mutableStateOf("0") }
     var rating by rememberSaveable { mutableStateOf(0) }
-    var dateTime by rememberSaveable { mutableStateOf(LocalDateTime.now()) };
-    var newEntry by remember { mutableStateOf<Entry>(Entry(id,id,title)) }
+    val dateTime by rememberSaveable { mutableStateOf(LocalDateTime.now()) }
+    val newEntry by remember { mutableStateOf<Entry>(Entry(id,id,title)) }
 
     Column(
         modifier = Modifier
@@ -69,9 +69,9 @@ fun AddEntryScreen(
                 imeAction = ImeAction.Done
             )
         )
-        DateTimePicker(dateTime,newEntry,entries)
+        DateTimePicker(dateTime,newEntry)
 
-        var noPageError: Boolean= true; // if any errors exist set to false
+        var noPageError = true // if any errors exist set to false
         Column {
             Text(
                 text = "Pages Read",
@@ -122,7 +122,7 @@ fun AddEntryScreen(
 
 
             //Check if number entered is a number
-            var isNumber: Boolean = true // user might type a . or - first which would crash the app if it were converted
+            var isNumber = true // user might type a . or - first which would crash the app if it were converted
             try {
                 readFrom.toInt()
                 readTo.toInt()
@@ -164,7 +164,7 @@ fun AddEntryScreen(
                 modifier = Modifier.size(50.dp),
                 rating = rating
             ) {
-                rating = it;
+                rating = it
             }
         }
 
@@ -214,7 +214,7 @@ fun AddEntryScreen(
             newEntry.rating = rating
             newEntry.comment = comments
             entries.addEntry(newEntry)
-            GOTOMAINSCREEN();
+            GOTOMAINSCREEN()
         }
     }
 }

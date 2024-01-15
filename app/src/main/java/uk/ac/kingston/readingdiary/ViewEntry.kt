@@ -2,17 +2,13 @@ package uk.ac.kingston.readingdiary
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.absolutePadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,8 +17,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
@@ -32,14 +26,12 @@ fun ViewEntry(
     entries: Database,
     GOTOMAINSCREEN: () -> Unit)
 {
-    var shouldSubmit by remember { mutableStateOf(false) }
-    var selectedEntry by remember{ mutableStateOf(entries.getEntryById(selectedID.id)) }
-    var title by rememberSaveable { mutableStateOf( selectedEntry!!.title) }
-    var comments by rememberSaveable { mutableStateOf(selectedEntry!!.comment) }
-    var readFrom by rememberSaveable { mutableStateOf(selectedEntry!!.pageFrom.toString()) }
-    var readTo by rememberSaveable { mutableStateOf(selectedEntry!!.pageTo.toString()) }
+    val selectedEntry by remember{ mutableStateOf(entries.getEntryById(selectedID.id)) }
+    val title by rememberSaveable { mutableStateOf( selectedEntry!!.title) }
+    val comments by rememberSaveable { mutableStateOf(selectedEntry!!.comment) }
+    val readFrom by rememberSaveable { mutableStateOf(selectedEntry!!.pageFrom.toString()) }
+    val readTo by rememberSaveable { mutableStateOf(selectedEntry!!.pageTo.toString()) }
     var rating by rememberSaveable { mutableStateOf(selectedEntry!!.rating) }
-    var dateTime by rememberSaveable { mutableStateOf(selectedEntry!!.dateTime) };
 
     Column(
         modifier = Modifier
@@ -62,7 +54,7 @@ fun ViewEntry(
                 .padding(5.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ){
-            myDisplayText(
+            MyDisplayText(
                 text = title,
                 title = "",
                 bookTitle= true,
@@ -70,12 +62,12 @@ fun ViewEntry(
             )
 
             selectedEntry?.let {
-                myDisplayText(
+                MyDisplayText(
                     text = it.getDateTime(),
                     title = "Date"
                 )
             }
-            myDisplayText(
+            MyDisplayText(
                 text = "pg.${readFrom} - pg.${readTo}",
                 title = "Pages Read"
             )
@@ -91,10 +83,10 @@ fun ViewEntry(
                     rating = rating,
                     isClickable = false
                 ) {
-                    rating = it;
+                    rating = it
                 }
             }
-            myDisplayText(
+            MyDisplayText(
                 text = comments,
                 title = "Comments"
             )
@@ -112,10 +104,9 @@ fun ViewEntry(
 fun PreviewViewScreen(){
     val testBase  by remember {mutableStateOf(Database())}
     var testEntry by remember { mutableStateOf<Entry?>(null) }
-    var newEntry by remember { mutableStateOf<Entry>(Entry(0,0,"hello")) }
+    val newEntry by remember { mutableStateOf<Entry>(Entry(0,0,"hello")) }
     var TEST by rememberSaveable { mutableStateOf(false) }
     val SHOWTEST = {TEST = true}
-    val HIDETEST = {TEST = false}
 
     newEntry.title = "Hello"
     newEntry.pageFrom = 7

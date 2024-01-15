@@ -57,7 +57,7 @@ fun EntryCard(
                     rating = entry.rating,
                     isClickable = false
                 ){
-                    entry.rating = it;
+                    entry.rating = it
                 }
             }
             ElevatedButton(onClick = {

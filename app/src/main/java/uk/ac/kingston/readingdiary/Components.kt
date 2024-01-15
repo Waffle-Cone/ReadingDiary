@@ -18,10 +18,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -51,11 +48,8 @@ fun TitleBar(title: String= "Enter Title", HANDLEBACK: ()->Unit){
 @Composable
 fun DateTimePicker(
     dateTime: LocalDateTime,
-    entry: Entry,
-    entries: Database)
+    entry: Entry)
 {
-    var selectedEntry by remember { mutableStateOf(entries.getEntryById(entry.id)) }
-
     val datePickerState = remember {
         DatePickerState(
             yearRange = (2022..2024),
@@ -69,8 +63,10 @@ fun DateTimePicker(
         state = datePickerState
     )
 
-    var selectedDate = datePickerState.selectedDateMillis
-    val myCalendar = Calendar.getInstance();
+    val selectedDate = datePickerState.selectedDateMillis
+
+    val myCalendar = Calendar.getInstance()
+
     if (selectedDate != null) {
         myCalendar.calendarType
         myCalendar.timeInMillis = selectedDate
@@ -81,17 +77,17 @@ fun DateTimePicker(
 
         if(myCalendar.get(Calendar.MONTH).equals(0)) // december is a special case
         {
-            month = 12; // set december to its actual month
+            month = 12 // set december to its actual month
             myCalendar.add(Calendar.YEAR,-1) // the year is incorrect for december so we must manually subtract a year
         }
 
-        var year = myCalendar.get(Calendar.YEAR)
-        var day = myCalendar.get(Calendar.DAY_OF_MONTH)
-        var nowTime = LocalTime.now()
+        val year = myCalendar.get(Calendar.YEAR)
+        val day = myCalendar.get(Calendar.DAY_OF_MONTH)
+        val nowTime = LocalTime.now()
 
         // in try catch in case the date is incorrect
         try{
-            var newDateTime = LocalDateTime.of(year,month,day,nowTime.hour,nowTime.minute)
+            val newDateTime = LocalDateTime.of(year,month,day,nowTime.hour,nowTime.minute)
             entry.dateTime= LocalDateTime.of(newDateTime.toLocalDate(),nowTime)
         }catch (e: Exception) {
             Text(
@@ -119,7 +115,7 @@ fun HeartRating(
             if(isClickable)
             {
                 Icon(
-                    modifier = modifier.clickable { onRatingChange(i.toInt()) }, //get the index number and set that to the rating
+                    modifier = modifier.clickable { onRatingChange(i) }, //get the index number and set that to the rating
                     contentDescription = "star rating",
                     tint = starsColor,
                     // print me the filled heart if the index we are on is less than or equal to rating
@@ -146,7 +142,7 @@ fun HeartRating(
 }
 
 @Composable
-fun myDisplayText(
+fun MyDisplayText(
   text: String = "",
   title: String = "",
   bookTitle: Boolean = false,

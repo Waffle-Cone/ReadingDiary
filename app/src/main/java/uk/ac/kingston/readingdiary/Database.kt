@@ -2,12 +2,11 @@ package uk.ac.kingston.readingdiary
 
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 
 class Database{
     private var entryList= mutableStateListOf<Entry>()// make sure this is a StateList so that things reload properly
-    private var selectedEntry: Entry? =null
+
     fun addEntry (entry: Entry): Boolean {
         if(getEntryById(entry.id) != null){
             Log.i("tag1","Entry with the ID: ${entry.id} already exists")
@@ -22,10 +21,6 @@ class Database{
     fun getEntryById(id: Int): Entry? {
        // resetList()
         return entryList.find {it.id == id}
-    }
-
-    fun getEntryByTitle(title: String): Entry?{
-        return entryList.find { it.title.lowercase() == title.lowercase() } // not case sensitive search
     }
 
     fun searchEntries(search: String): List<Entry>{
@@ -48,7 +43,7 @@ class Database{
             return false
         }
     }
-    fun deleteEntry(id: Int, onDelete: ()->Unit): Boolean{
+    fun deleteEntry(id: Int, closeConfirm: ()->Unit): Boolean{
         val existingEntry = getEntryById(id)
         if (existingEntry != null) {
             entryList.remove(existingEntry)
@@ -59,7 +54,7 @@ class Database{
             {
                 resetList() // make this list work please for the other deletes
             }
-            onDelete()
+            closeConfirm()
             return true
         }
         else{
@@ -69,10 +64,6 @@ class Database{
     }
     fun getAllEntries(): List<Entry> {
         return entryList.toList()
-    }
-
-    fun getEntries(): MutableList<Entry>{
-        return entryList
     }
 
     fun sortByTitle()
@@ -92,10 +83,9 @@ class Database{
       // resetList()
     }
 
-
     /**
      *   Basically I have to re shuffle the entire entryList so that
-     *   the selection IDs and Adding works
+     *   the selection IDs and Adding new entries, after deleting, works properly
      */
     fun resetList(newList: MutableList<Entry> = mutableListOf()){
         for (entry in entryList)
@@ -110,11 +100,14 @@ class Database{
         for(i in 0 until newList.size){
             Log.i("tag1"," ${i} ENTRYLIST ${entryList.toString()}")
             Log.i("tag1"," BEFORE new entry in newList ${newList.get(i).toString()}")
+
             newList.get(i).resetID(i)
+
             Log.i("tag1"," AFTER new entry in newList ${newList.get(i).toString()}")
             Log.i("tag1","  ENTRYLIST SIZE ${entryList.size}")
 
             entryList.add(newList.get(i))
+
             Log.i("tag1","  AFTER ENTRYLIST SIZE ${entryList.size}")
             Log.i("tag1"," REAWAKEND ENTRYLIST ${entryList.get(i)}")
             // entryList.add(newList.get(i))
